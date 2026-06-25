@@ -1,11 +1,26 @@
-Step 5 — Create the Models
-Do models before anything else because everything else depends on them.
-Models/Api.cs — two classes in one file:
+API Monitor — Build Checklist
+Folder Structure
 
-Api — the database table (Id, Name, Url, Version, YamlSource, StatusCode, ResponseTimeMs, IsRunning, List of Endpoints)
-ApiEndpoint — the endpoints table (Id, ApiId, Method, Path, Summary, Description, OperationId, RequestSchemaRef, RequiredHeaders, StatusCode, ResponseTimeMs, IsRunning, and the Api navigation property)
+ Create APIData/ folder in project root
+ Create APIData/schemas/common/
+ Create APIData/schemas/get/response/
+ Create APIData/schemas/post/request/ and post/response/
+ Create APIData/schemas/patch/request/ and patch/response/
+ Create Data/ folder
+ Create Services/ folder
 
-Models/YamlApiDefinition.cs — classes that mirror the OpenAPI YAML structure for deserialization:
+
+YAML Files
+
+ Drop the real yaml file into APIData/
+ Verify the structure has openapi, info, servers, and paths sections
+ Verify schemas/common/ has the headers file with ClientID and ClientName
+
+
+Models
+
+ Create Models/ConnectionResult.cs — 4 properties: StatusCode, ResponseTimeMs, IsRunning, ErrorMessage
+ Create Models/YamlApiDefinition.cs — classes that mirror the OpenAPI yaml structure:
 
 OpenApiDefinition (Info, Servers, Paths)
 OpenApiInfo (Title, Version, Description)
@@ -16,45 +31,58 @@ OpenApiRequestBody (Required, Content)
 OpenApiMediaType (Schema)
 OpenApiResponse (Description)
 
-Models/ConnectionResult.cs — simple class to hold test results (StatusCode, ResponseTimeMs, IsRunning, ErrorMessage)
 
-Step 6 — Create the Database Context
-Data/AppDbContext.cs
+ Create Models/Api.cs — two classes in one file:
 
-Inherit from DbContext
-Constructor takes DbContextOptions<AppDbContext>
-Two DbSet properties: Apis and ApiEndpoints
-No OnModelCreating needed — EF figures it out from the models
+Api — (Id, Name, Url, Version, YamlSource, StatusCode, ResponseTimeMs, IsRunning, List of Endpoints)
+ApiEndpoint — (Id, ApiId, Method, Path, Summary, Description, OperationId, RequestSchemaRef, RequiredHeaders, StatusCode, ResponseTimeMs, IsRunning, Api navigation property)
 
 
-Step 7 — Update appsettings.json
-Add your connection string:
+
+
+Database
+
+ Create Data/AppDbContext.cs — inherit DbContext, constructor takes DbContextOptions<AppDbContext>, two DbSet properties (Apis and ApiEndpoints), no OnModelCreating needed
+ Update appsettings.json:
+
 json"ConnectionStrings": {
-  "DefaultConnection": "Data Source=DESKTOP-NCP3T8N\\SQLEXPRESS;Initial Catalog=ApiMonitorDb;Integrated Security=True;MultipleActiveResultSets=True;TrustServerCertificate=True;"
+  "DefaultConnection": "Data:DATABASE;Initial Catalog=ApiMonitorDb;Integrated Security=True;MultipleActiveResultSets=True;TrustServerCertificate=True;"
 }
 
-Step 8 — Create the Services
-Build them in this order because each one depends on the previous:
-Services/YamlLoaderService.cs first — it only depends on IWebHostEnvironment:
+ Run Add-Migration InitialCreate in PMC
+ Check the migration Up() is not empty — fill it in manually if it is
+ Run Update-Database
+ Verify in SQL that Apis and ApiEndpoints tables exist
+
+
+Services
+
+ Create Services/YamlLoaderService.cs:
 
 Constructor takes IWebHostEnvironment
 LoadAll() — scans APIData/ top level only for .yaml files, deserializes each into OpenApiDefinition, returns list of (relativePath, definition) tuples
-ResolveServerUrl() — replaces {host} in the URL with the default value from the variables
+ResolveServerUrl(OpenApiServer server, string host) — replaces {host} in the URL with the host value entered by the user
 
-Services/ApiConnectionService.cs second — it only depends on IHttpClientFactory:
+
+ Create Services/ApiConnectionService.cs:
 
 Constructor takes IHttpClientFactory
 TestAsync(string url) — starts stopwatch, calls GetAsync, stops stopwatch, returns ConnectionResult
-TestAllEndpointsAsync(Api api) — tests base URL then each endpoint, updates their StatusCode/ResponseTimeMs/IsRunning
+TestAllEndpointsAsync(Api api) — tests base URL then each endpoint, updates their StatusCode, ResponseTimeMs, IsRunning
 
-Services/ApiSyncService.cs third — it depends on the other two services:
+
+ Create Services/ApiSyncService.cs:
 
 Constructor takes AppDbContext, YamlLoaderService, ApiConnectionService
-SyncAllAsync() — calls LoadAll(), loops through results, finds or creates DB record by YamlSource, updates fields, clears and reloads endpoints, saves. Does NOT test connections here.
+SyncAllAsync(string host) — calls LoadAll(), loops through results, finds or creates DB record by YamlSource, updates fields, clears and reloads endpoints, saves. Does NOT test connections here.
 
 
-Step 9 — Update Program.cs
-Register everything in this order:
+
+
+Program.cs
+
+ Register services in this order:
+
 csharpbuilder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -62,75 +90,71 @@ builder.Services.AddHttpClient();
 builder.Services.AddScoped<YamlLoaderService>();
 builder.Services.AddScoped<ApiConnectionService>();
 builder.Services.AddScoped<ApiSyncService>();
-Then in the startup block after var app = builder.Build():
+
+ Add startup block that only migrates — no sync on startup:
+
 csharpusing (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.Migrate();
-    var sync = scope.ServiceProvider.GetRequiredService<ApiSyncService>();
-    await sync.SyncAllAsync();
 }
 
-Step 10 — Run Migrations
-In Package Manager Console:
-powershellAdd-Migration InitialCreate
-Update-Database
-If the migration Up() is empty, fill it in manually with CreateTable for Apis and ApiEndpoints. Then delete the entry from __EFMigrationsHistory in SQL and re-run Update-Database.
+Controllers
 
-Step 11 — Create the Controller
-Controllers/ApiController.cs — actions in this order:
+ Create HomeController.cs — just Index() with total/running/down counts
+ Create ApiController.cs with these actions in order:
 
-Index() — gets all APIs from DB with endpoints, returns view
-Details(int id) — gets one API, tests connection, returns view
-Call(int endpointId) GET — loads endpoint, returns form view
-Call(int endpointId, ...) POST — builds URL, adds headers, sends HTTP request, shows response
-Create() GET/POST — manual add with connection test on save
-Edit() GET/POST — edit with connection test on save
-Delete() GET/POST — confirm and delete
-Test(int id) POST — AJAX live test, returns JSON
-Sync() POST — calls SyncAllAsync() then tests all connections
-
-Controllers/HomeController.cs — just Index() that counts total/running/down and passes to view
-
-Step 12 — Create the Views
-Build them in this order:
-Shared first:
-
-Views/_ViewImports.cshtml — @using and @addTagHelper
-Views/_ViewStart.cshtml — sets Layout = "_Layout"
-Views/Shared/_Layout.cshtml — navbar, container, alert display, scripts
-
-Then each view:
-
-Views/Home/Index.cshtml — dashboard with 3 stat cards (Total, Online, Offline) and Sync button
-Views/Api/Index.cshtml — grid of API cards with status badge, meta info, action buttons
-Views/Api/Details.cshtml — endpoint list with method badges, status, Call button per endpoint
-Views/Api/Call.cshtml — form with ClientID/ClientName headers, input fields based on endpoint, response box
-Views/Api/Create.cshtml — simple form for Name and URL
-Views/Api/Edit.cshtml — same as Create but pre-filled
-Views/Api/Delete.cshtml — confirm delete page
+ Index() — list all APIs from DB with endpoints
+ Details(int id) — single API with endpoints, tests connection on open
+ Call() GET — loads endpoint, returns form view
+ Call() POST — builds URL, adds headers, sends HTTP request, shows response
+ Create() GET/POST — manual add with connection test on save
+ Edit() GET/POST — edit with connection test on save
+ Delete() GET/POST — confirm and delete
+ Test(int id) POST — AJAX live test, returns JSON
+ Sync() GET — returns host entry form
+ Sync(string host) POST — calls SyncAllAsync(host) then tests all connections and saves
 
 
-Step 13 — Add Static Files
-wwwroot/css/site.css — all the dark theme styles
 
-wwwroot/js/site.js — the testApi() function that calls /Api/Test/{id} via fetch and updates the badge without reloading
 
-Step 14 — Final Checks
+Views
 
-Drop a real .yaml file in APIData/ matching the OpenAPI structure
-Update the host default value to the real server IP
-Run the app and confirm the sync picks it up
-Click ↺ Sync YAML to test connections manually
-Click Call on an endpoint, fill in ClientID and the input, confirm the response comes back
+ Create Views/_ViewImports.cshtml — @using and @addTagHelper
+ Create Views/_ViewStart.cshtml — sets Layout = "_Layout"
+ Create Views/Shared/_Layout.cshtml — navbar, container, alert display, scripts
+ Create Views/Home/Index.cshtml — dashboard with 3 stat cards (Total, Online, Offline) and Sync link
+ Create Views/Api/Index.cshtml — grid of API cards with status badges and action buttons
+ Create Views/Api/Details.cshtml — endpoint list with method badges, status, Call buttons
+ Create Views/Api/Call.cshtml — form with ClientID/ClientName headers, input fields per endpoint, response box
+ Create Views/Api/Sync.cshtml — form with one input for host IP, submit triggers sync
+ Create Views/Api/Create.cshtml — simple form for Name and URL
+ Create Views/Api/Edit.cshtml — same as Create but pre-filled
+ Create Views/Api/Delete.cshtml — confirm delete page
+
+
+Static Files
+
+ Create wwwroot/css/site.css — dark theme styles
+ Create wwwroot/js/site.js — testApi() function that calls /Api/Test/{id} via fetch and updates status badge without page reload
+
+
+Final Verification
+
+ App starts without errors
+ Click ↺ Sync YAML, enter the host IP when prompted
+ Verify APIs and endpoints show up in the UI
+ Verify /health endpoint shows correct status after sync
+ Click Call on /health, fill in ClientID and ClientName, confirm response comes back
+ Once /health works, move to the next endpoint
 
 
 Key Things to Remember
 
-Models first, always — everything else depends on them
-Services go in order: Loader → Connection → Sync
+Models first — everything else depends on them
+Services in order: Loader → Connection → Sync
 DbSet in AppDbContext is how EF knows which tables exist
-ApiId on ApiEndpoint is the foreign key — EF links it to Api.Id automatically by naming convention
+ApiId on ApiEndpoint is the foreign key — EF links it to Api.Id by naming convention automatically
 YamlApiDefinition is temporary (just for reading the file), Api is permanent (saved to DB)
-{host} in the YAML URL gets replaced by ResolveServerUrl() before anything is saved
-Migrations: if Up() is empty, fill it manually and clear __EFMigrationsHistory before re-running
+{host} gets replaced in ResolveServerUrl() with whatever the user types into the Sync form
+If migration Up() is empty — fill it manually, delete the row from __EFMigrationsHistory, then re-run Update-Database
