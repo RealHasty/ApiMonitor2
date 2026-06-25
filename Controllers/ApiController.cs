@@ -218,11 +218,18 @@ public class ApiController : Controller
         });
     }
 
-    // Sync all yaml files
-    [HttpPost]
-    public async Task<IActionResult> Sync()
+    // GET — shows the host entry form
+    [HttpGet]
+    public IActionResult Sync()
     {
-        await _syncService.SyncAllAsync();
+        return View();
+    }
+
+    // POST — receives the host, syncs, then tests all connections
+    [HttpPost]
+    public async Task<IActionResult> Sync(string host)
+    {
+        await _syncService.SyncAllAsync(host);
 
         // Test all connections after manual sync
         var apis = await _db.Apis.Include(a => a.Endpoints).ToListAsync();

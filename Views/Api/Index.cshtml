@@ -7,10 +7,7 @@
     <h1 class="page-title">APIs</h1>
     <div class="page-actions">
         <a asp-action="Create" class="btn btn-primary">+ Add API</a>
-        <form asp-action="Sync" method="post" style="display:inline">
-            @Html.AntiForgeryToken()
-            <button type="submit" class="btn btn-secondary">↺ Sync YAML</button>
-        </form>
+        <a asp-controller="Api" asp-action="Sync" class="btn btn-secondary">↺ Sync YAML</a>
     </div>
 </div>
 

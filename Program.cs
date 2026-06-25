@@ -35,9 +35,6 @@ using (var scope = app.Services.CreateScope())
     //   dotnet ef database update
     // then swap this back to db.Database.Migrate()
     db.Database.EnsureCreated();
-
-    var sync = scope.ServiceProvider.GetRequiredService<ApiSyncService>();
-    await sync.SyncAllAsync();  // reads APIData/ and tests all connections
 }
 
 if (!app.Environment.IsDevelopment())

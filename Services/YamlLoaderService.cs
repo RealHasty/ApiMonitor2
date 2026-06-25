@@ -54,13 +54,10 @@ public class YamlLoaderService
 
     // Resolves the server URL by replacing {host} with the default value
     // e.g. http://{host}:8080/api/v1 becomes http://192.168.1.100:8080/api/v1
-    public string ResolveServerUrl(OpenApiServer server)
+    public string ResolveServerUrl(OpenApiServer server, string host)
     {
         var url = server.Url;
-        foreach (var variable in server.Variables)
-        {
-            url = url.Replace("{" + variable.Key + "}", variable.Value.Default);
-        }
+        url = url.Replace("{host}", host);
         return url;
     }
 }

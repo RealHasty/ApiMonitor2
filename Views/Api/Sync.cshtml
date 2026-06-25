@@ -1,0 +1,20 @@
+﻿@{
+    ViewData["Title"] = "Sync APIs";
+}
+
+<div class="form-page">
+    <a asp-controller="Home" asp-action="Index" class="back-link">← Dashboard</a>
+    <h1 class="page-title">Sync YAML Files</h1>
+    <p class="muted">Enter the host IP and port before syncing. This replaces {host} in the server URL.</p>
+
+    <form asp-action="Sync" method="post" class="api-form">
+        @Html.AntiForgeryToken()
+        <div class="form-group">
+            <label>Host</label>
+            <input name="host" class="form-control" placeholder="192.168.1.100:8080" />
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Sync</button>
+        </div>
+    </form>
+</div>

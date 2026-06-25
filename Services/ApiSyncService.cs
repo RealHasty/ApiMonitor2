@@ -19,7 +19,7 @@ public class ApiSyncService
         _connectionService = connectionService;
     }
 
-    public async Task SyncAllAsync()
+    public async Task SyncAllAsync(string host)
     {
         var yamlApis = _yamlLoader.LoadAll();
 
@@ -27,7 +27,7 @@ public class ApiSyncService
         {
             // Resolve the base URL (replaces {host} with the default value)
             var server = definition.Servers.FirstOrDefault();
-            var baseUrl = server != null ? _yamlLoader.ResolveServerUrl(server) : string.Empty;
+            var baseUrl = server != null ? _yamlLoader.ResolveServerUrl(server, host) : string.Empty;
 
             // Find existing DB record for this yaml file, or create a new one
             var existing = await _db.Apis
