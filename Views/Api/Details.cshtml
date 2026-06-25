@@ -1,0 +1,76 @@
+@model Api
+@{
+    ViewData["Title"] = Model.Name;
+}
+
+<div class="page-header">
+    <div>
+        <a asp-action="Index" class="back-link">← All APIs</a>
+        <h1 class="page-title">@Model.Name</h1>
+        <span class="api-url">@Model.Url</span>
+        @if (!string.IsNullOrEmpty(Model.Version))
+        {
+            <span class="yaml-badge">v@Model.Version</span>
+        }
+    </div>
+    <span class="status-badge @(Model.IsRunning ? "status-up" : "status-down")">
+        @(Model.IsRunning ? "● Online" : "● Offline")
+    </span>
+</div>
+
+<div class="detail-meta">
+    <div class="meta-pill">Status <strong>@(Model.StatusCode?.ToString() ?? "—")</strong></div>
+    <div class="meta-pill">Response <strong>@(Model.ResponseTimeMs.HasValue ? $"{Model.ResponseTimeMs}ms" : "—")</strong></div>
+    @if (!string.IsNullOrEmpty(Model.YamlSource))
+    {
+        <div class="meta-pill">Source <strong>@Model.YamlSource</strong></div>
+    }
+</div>
+
+<h2 class="section-title">Endpoints</h2>
+
+@if (!Model.Endpoints.Any())
+{
+    <p class="muted">No endpoints found.</p>
+}
+else
+{
+    <div class="endpoint-list">
+        @foreach (var ep in Model.Endpoints)
+        {
+            <div class="endpoint-row">
+                <span class="method-badge method-@ep.Method.ToLower()">@ep.Method</span>
+                <span class="endpoint-path">@ep.Path</span>
+                <span class="endpoint-desc">@ep.Summary</span>
+
+                <div style="margin-left:auto; display:flex; align-items:center; gap:0.75rem;">
+                    <span class="status-badge @(ep.IsRunning ? "status-up" : "status-down") status-sm">
+                        @(ep.StatusCode?.ToString() ?? "—")
+                    </span>
+                    <span class="muted">@(ep.ResponseTimeMs.HasValue ? $"{ep.ResponseTimeMs}ms" : "")</span>
+
+                    <!-- Call button — goes to the form where you enter data and send the request -->
+                    <a asp-action="Call" asp-route-endpointId="@ep.Id" class="btn btn-sm btn-test">
+                        Call
+                    </a>
+                </div>
+            </div>
+
+            @if (!string.IsNullOrEmpty(ep.RequiredHeaders))
+            {
+                <div class="endpoint-meta-row">
+                    <span class="muted">Required headers: </span>
+                    @foreach (var h in ep.RequiredHeaders.Split(','))
+                    {
+                        <span class="header-badge">@h</span>
+                    }
+                </div>
+            }
+        }
+    </div>
+}
+
+<div class="detail-actions">
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Edit</a>
+    <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">Delete</a>
+</div>

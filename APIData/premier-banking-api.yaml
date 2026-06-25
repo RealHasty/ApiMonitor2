@@ -1,0 +1,118 @@
+openapi: "3.0.0"
+info:
+  title: Premier Banking API
+  version: 1.0.0
+  description: Internal banking API for card and account operations
+
+servers:
+  - url: http://{host}:8080/api/v1
+    variables:
+      host:
+        default: 192.168.1.100
+        description: Internal server IP address
+
+paths:
+
+  /health:
+    get:
+      summary: Health Check
+      description: Check if the API is running
+      operationId: getHealth
+      parameters:
+        - $ref: schemas/common/premier-internal-headers.yaml#/components/parameters/ClientID
+        - $ref: schemas/common/premier-internal-headers.yaml#/components/parameters/ClientName
+      responses:
+        "200":
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                $ref: schemas/get/response/health-resp-schema.yaml#/components/schemas/getHealthResp
+        "400":
+          description: Bad request
+        "500":
+          description: Internal server error
+
+  /fetchCardDetails:
+    post:
+      summary: Fetch Card Details
+      description: Send a card number and get back all details for that card
+      operationId: fetchCardDetails
+      parameters:
+        - $ref: schemas/common/premier-internal-headers.yaml#/components/parameters/ClientID
+        - $ref: schemas/common/premier-internal-headers.yaml#/components/parameters/ClientName
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: schemas/post/request/fetch-card-details-req-schema.yaml#/components/schemas/fetchCardDetailsReq
+      responses:
+        "200":
+          description: Card details returned successfully
+          content:
+            application/json:
+              schema:
+                $ref: schemas/post/response/fetch-card-details-resp-schema.yaml#/components/schemas/fetchCardDetailsResp
+        "400":
+          description: Bad request - invalid card number
+        "404":
+          description: Card not found
+        "500":
+          description: Internal server error
+
+  /retrieveAccount:
+    post:
+      summary: Retrieve Account
+      description: Send an account ID and get back full account details
+      operationId: retrieveAccount
+      parameters:
+        - $ref: schemas/common/premier-internal-headers.yaml#/components/parameters/ClientID
+        - $ref: schemas/common/premier-internal-headers.yaml#/components/parameters/ClientName
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: schemas/post/request/retrieve-account-req-schema.yaml#/components/schemas/retrieveAccountReq
+      responses:
+        "200":
+          description: Account details returned successfully
+          content:
+            application/json:
+              schema:
+                $ref: schemas/post/response/retrieve-account-resp-schema.yaml#/components/schemas/retrieveAccountResp
+        "400":
+          description: Bad request
+        "404":
+          description: Account not found
+        "500":
+          description: Internal server error
+
+  /updateCardStatus:
+    patch:
+      summary: Update Card Status
+      description: Block or unblock a card
+      operationId: updateCardStatus
+      parameters:
+        - $ref: schemas/common/premier-internal-headers.yaml#/components/parameters/ClientID
+        - $ref: schemas/common/premier-internal-headers.yaml#/components/parameters/ClientName
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: schemas/patch/request/update-card-status-req-schema.yaml#/components/schemas/updateCardStatusReq
+      responses:
+        "200":
+          description: Card status updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: schemas/patch/response/update-card-status-resp-schema.yaml#/components/schemas/updateCardStatusResp
+        "400":
+          description: Bad request
+        "404":
+          description: Card not found
+        "500":
+          description: Internal server error

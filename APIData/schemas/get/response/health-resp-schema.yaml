@@ -1,0 +1,20 @@
+# schemas/get/response/health-resp-schema.yaml
+# What comes back when you call GET /health
+
+components:
+  schemas:
+    getHealthResp:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "UP"
+          description: Whether the API is running
+        version:
+          type: string
+          example: "1.0.0"
+          description: Current API version
+        timestamp:
+          type: string
+          example: "2026-06-24T10:00:00Z"
+          description: Server time at the moment of the health check

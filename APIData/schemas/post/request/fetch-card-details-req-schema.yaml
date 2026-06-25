@@ -1,0 +1,14 @@
+# schemas/post/request/fetch-card-details-req-schema.yaml
+# What you SEND when calling POST /fetchCardDetails
+
+components:
+  schemas:
+    fetchCardDetailsReq:
+      type: object
+      required:
+        - cardNumber
+      properties:
+        cardNumber:
+          type: string
+          example: "4111111111111111"
+          description: The 16-digit credit card number to look up

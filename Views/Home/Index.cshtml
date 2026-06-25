@@ -1,0 +1,31 @@
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="dashboard">
+    <h1 class="page-title">Dashboard</h1>
+
+    <div class="stat-grid">
+        <div class="stat-card">
+            <span class="stat-number">@ViewBag.Total</span>
+            <span class="stat-label">Total APIs</span>
+        </div>
+        <div class="stat-card running">
+            <span class="stat-number">@ViewBag.Running</span>
+            <span class="stat-label">Online</span>
+        </div>
+        <div class="stat-card down">
+            <span class="stat-number">@ViewBag.Down</span>
+            <span class="stat-label">Offline</span>
+        </div>
+    </div>
+
+    <div class="dashboard-actions">
+        <a asp-controller="Api" asp-action="Index" class="btn btn-primary">View All APIs</a>
+
+        <form asp-controller="Api" asp-action="Sync" method="post" style="display:inline">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-secondary">↺ Sync YAML Files</button>
+        </form>
+    </div>
+</div>

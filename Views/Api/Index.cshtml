@@ -1,0 +1,72 @@
+@model List<Api>
+@{
+    ViewData["Title"] = "APIs";
+}
+
+<div class="page-header">
+    <h1 class="page-title">APIs</h1>
+    <div class="page-actions">
+        <a asp-action="Create" class="btn btn-primary">+ Add API</a>
+        <form asp-action="Sync" method="post" style="display:inline">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-secondary">↺ Sync YAML</button>
+        </form>
+    </div>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="empty-state">
+        <p>No APIs found. Add a <code>.yaml</code> file to <code>/APIData/</code> and click Sync, or add one manually.</p>
+        <a asp-action="Create" class="btn btn-primary">+ Add Manually</a>
+    </div>
+}
+else
+{
+    <div class="api-grid">
+        @foreach (var api in Model)
+        {
+            <div class="api-card" id="api-card-@api.Id">
+                <div class="api-card-header">
+                    <div>
+                        <h2 class="api-name">@api.Name</h2>
+                        <span class="api-url">@api.Url</span>
+                        @if (!string.IsNullOrEmpty(api.YamlSource))
+                        {
+                            <span class="yaml-badge">📄 @api.YamlSource</span>
+                        }
+                    </div>
+                    <span class="status-badge @(api.IsRunning ? "status-up" : "status-down")"
+                          id="status-@api.Id">
+                        @(api.IsRunning ? "● Online" : "● Offline")
+                    </span>
+                </div>
+
+                <div class="api-meta">
+                    <span class="meta-item" id="code-@api.Id">
+                        HTTP @(api.StatusCode?.ToString() ?? "—")
+                    </span>
+                    <span class="meta-item" id="time-@api.Id">
+                        @(api.ResponseTimeMs.HasValue ? $"{api.ResponseTimeMs}ms" : "—")
+                    </span>
+                    <span class="meta-item">
+                        @api.Endpoints.Count endpoint(s)
+                    </span>
+                </div>
+
+                <div class="api-card-actions">
+                    <a asp-action="Details" asp-route-id="@api.Id" class="btn btn-sm btn-outline">Details</a>
+                    <a asp-action="Edit"    asp-route-id="@api.Id" class="btn btn-sm btn-outline">Edit</a>
+
+                    <!-- Live test button — calls /Api/Test via fetch -->
+                    <button class="btn btn-sm btn-test"
+                            onclick="testApi(@api.Id, this)">
+                        Test
+                    </button>
+
+                    <a asp-action="Delete" asp-route-id="@api.Id" class="btn btn-sm btn-danger">Delete</a>
+                </div>
+            </div>
+        }
+    </div>
+}

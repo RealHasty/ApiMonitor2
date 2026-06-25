@@ -1,0 +1,12 @@
+# schemas/post/request/retrieve-account-req-schema.yaml
+components:
+  schemas:
+    retrieveAccountReq:
+      type: object
+      required:
+        - accountID
+      properties:
+        accountID:
+          type: string
+          example: "ACC-00123"
+          description: The account ID to retrieve details for

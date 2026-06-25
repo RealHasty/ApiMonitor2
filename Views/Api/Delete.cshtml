@@ -1,0 +1,18 @@
+@model Api
+@{
+    ViewData["Title"] = $"Delete — {Model.Name}";
+}
+
+<div class="form-page">
+    <h1 class="page-title">Delete API</h1>
+    <p>Are you sure you want to delete <strong>@Model.Name</strong>?</p>
+    <p class="muted">@Model.Url</p>
+
+    <form asp-action="Delete" method="post">
+        @Html.AntiForgeryToken()
+        <div class="form-actions">
+            <button type="submit" class="btn btn-danger">Yes, Delete</button>
+            <a asp-action="Index" class="btn btn-outline">Cancel</a>
+        </div>
+    </form>
+</div>

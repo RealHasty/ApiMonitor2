@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] — API Monitor</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <nav class="navbar">
+        <a class="navbar-brand" asp-controller="Home" asp-action="Index">
+            <span class="brand-icon">◈</span> API Monitor
+        </a>
+        <div class="navbar-links">
+            <a asp-controller="Home" asp-action="Index">Dashboard</a>
+            <a asp-controller="Api" asp-action="Index">APIs</a>
+            <a asp-controller="Api" asp-action="Create">+ Add API</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success">@TempData["Success"]</div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-error">@TempData["Error"]</div>
+        }
+
+        @RenderBody()
+    </main>
+
+    <script src="~/js/site.js" asp-append-version="true"></script>
+</body>
+</html>

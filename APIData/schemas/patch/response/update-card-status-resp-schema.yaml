@@ -1,0 +1,18 @@
+# schemas/patch/response/update-card-status-resp-schema.yaml
+components:
+  schemas:
+    updateCardStatusResp:
+      type: object
+      properties:
+        cardNumber:
+          type: string
+          example: "4111111111111111"
+        previousStatus:
+          type: string
+          example: "ACTIVE"
+        newStatus:
+          type: string
+          example: "BLOCKED"
+        updatedAt:
+          type: string
+          example: "2026-06-24T10:30:00Z"

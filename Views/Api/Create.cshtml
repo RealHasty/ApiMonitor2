@@ -1,0 +1,31 @@
+@model Api
+@{
+    ViewData["Title"] = "Add API";
+}
+
+<div class="form-page">
+    <a asp-action="Index" class="back-link">← All APIs</a>
+    <h1 class="page-title">Add API</h1>
+    <p class="muted">The connection will be tested automatically when you save.</p>
+
+    <form asp-action="Create" method="post" class="api-form">
+        @Html.AntiForgeryToken()
+
+        <div class="form-group">
+            <label asp-for="Name">Name</label>
+            <input asp-for="Name" class="form-control" placeholder="My API" />
+            <span asp-validation-for="Name" class="field-error"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Url">Base URL</label>
+            <input asp-for="Url" class="form-control" placeholder="https://api.example.com" />
+            <span asp-validation-for="Url" class="field-error"></span>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Save & Test Connection</button>
+            <a asp-action="Index" class="btn btn-outline">Cancel</a>
+        </div>
+    </form>
+</div>

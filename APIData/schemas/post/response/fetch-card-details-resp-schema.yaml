@@ -1,0 +1,33 @@
+# schemas/post/response/fetch-card-details-resp-schema.yaml
+# What comes BACK when you call POST /fetchCardDetails
+
+components:
+  schemas:
+    fetchCardDetailsResp:
+      type: object
+      properties:
+        cardNumber:
+          type: string
+          example: "4111111111111111"
+        cardHolderName:
+          type: string
+          example: "John Smith"
+        accountID:
+          type: string
+          example: "ACC-00123"
+        cardStatus:
+          type: string
+          example: "ACTIVE"
+          description: ACTIVE, BLOCKED, or EXPIRED
+        expiryDate:
+          type: string
+          example: "12/28"
+        creditLimit:
+          type: number
+          example: 5000.00
+        availableBalance:
+          type: number
+          example: 3200.50
+        issueDate:
+          type: string
+          example: "2022-01-15"

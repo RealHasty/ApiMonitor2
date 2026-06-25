@@ -1,0 +1,44 @@
+@model Api
+@{
+    ViewData["Title"] = $"Edit — {Model.Name}";
+}
+
+<div class="form-page">
+    <a asp-action="Index" class="back-link">← All APIs</a>
+    <h1 class="page-title">Edit API</h1>
+    <p class="muted">Connection is re-tested every time you save.</p>
+
+    <form asp-action="Edit" method="post" class="api-form">
+        @Html.AntiForgeryToken()
+        <input asp-for="Id" type="hidden" />
+        <input asp-for="YamlSource" type="hidden" />
+
+        <div class="form-group">
+            <label asp-for="Name">Name</label>
+            <input asp-for="Name" class="form-control" />
+            <span asp-validation-for="Name" class="field-error"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Url">Base URL</label>
+            <input asp-for="Url" class="form-control" />
+            <span asp-validation-for="Url" class="field-error"></span>
+        </div>
+
+        <!-- Read-only status from last test -->
+        <div class="current-status">
+            <span class="status-badge @(Model.IsRunning ? "status-up" : "status-down")">
+                Last test: @(Model.IsRunning ? "Online" : "Offline")
+            </span>
+            <span class="muted">
+                HTTP @(Model.StatusCode?.ToString() ?? "—") —
+                @(Model.ResponseTimeMs.HasValue ? $"{Model.ResponseTimeMs}ms" : "never tested")
+            </span>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Save & Re-test</button>
+            <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline">Cancel</a>
+        </div>
+    </form>
+</div>

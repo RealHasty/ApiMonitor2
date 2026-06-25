@@ -1,0 +1,16 @@
+# schemas/patch/request/update-card-status-req-schema.yaml
+components:
+  schemas:
+    updateCardStatusReq:
+      type: object
+      required:
+        - cardNumber
+        - newStatus
+      properties:
+        cardNumber:
+          type: string
+          example: "4111111111111111"
+        newStatus:
+          type: string
+          example: "BLOCKED"
+          description: ACTIVE or BLOCKED

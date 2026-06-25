@@ -1,0 +1,27 @@
+# schemas/post/response/retrieve-account-resp-schema.yaml
+components:
+  schemas:
+    retrieveAccountResp:
+      type: object
+      properties:
+        accountID:
+          type: string
+          example: "ACC-00123"
+        accountHolderName:
+          type: string
+          example: "John Smith"
+        accountStatus:
+          type: string
+          example: "ACTIVE"
+        accountType:
+          type: string
+          example: "CREDIT"
+        openedDate:
+          type: string
+          example: "2020-03-01"
+        totalCreditLimit:
+          type: number
+          example: 10000.00
+        currentBalance:
+          type: number
+          example: 6800.50

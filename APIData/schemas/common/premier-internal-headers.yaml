@@ -1,0 +1,23 @@
+# schemas/common/premier-internal-headers.yaml
+# These are the headers required on every request to the API.
+# Each endpoint $ref's this file to say "this header is required"
+
+components:
+  parameters:
+    ClientID:
+      name: ClientID
+      in: header
+      required: true
+      description: The unique identifier of the calling client system
+      schema:
+        type: string
+        example: "CLIENT-001"
+
+    ClientName:
+      name: ClientName
+      in: header
+      required: true
+      description: The name of the calling client system
+      schema:
+        type: string
+        example: "PremierBankingApp"
